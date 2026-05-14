@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NJ Health Equity Analytics · Lunarix Technologies</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0f2342;--blue:#1B4F8A;--blue-l:#EEF3FA;
+  --teal:#1D9E75;--teal-l:#E1F5EE;
+  --amber:#BA7517;--amber-l:#FAEEDA;
+  --red:#A32D2D;--red-l:#FCEBEB;
+  --purple:#534AB7;--purple-l:#EEEDFE;
+  --text:#1a1a2e;--mid:#4a4a6a;--muted:#888;
+  --border:#e2e8f0;--bg:#f7f9ff;--white:#fff;
+  --r:10px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--bg);font-size:14px}
+.shell{max-width:1120px;margin:0 auto;padding:22px 18px 60px}
+.hdr{background:var(--navy);color:#fff;border-radius:var(--rl);padding:22px 26px;margin-bottom:18px}
+.hdr h1{font-size:19px;font-weight:600;margin-bottom:4px}
+.hdr p{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:12px}
+.hdr-tags{display:flex;gap:8px;flex-wrap:wrap}
+.htag{font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8)}
+.htag.jnj{background:rgba(29,158,117,.25);border-color:rgba(29,158,117,.5);color:#5DE8B0}
+
+.metric-sel{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.metric-sel label{font-size:12px;color:var(--muted)}
+.metric-sel select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--white);color:var(--text);cursor:pointer}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px}
+.kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kpi-val{font-size:22px;font-weight:600;color:var(--navy)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.kpi-flag{font-size:11px;font-weight:500;margin-top:3px}
+
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.card-title{font-size:13px;font-weight:500;color:var(--navy);margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.chart-wrap{position:relative;height:220px}
+
+/* COUNTY TILE MAP */
+.map-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.county-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:600px;margin:0 auto}
+.county-tile{border-radius:5px;padding:5px 3px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid transparent}
+.county-tile:hover{transform:scale(1.06);z-index:2;position:relative}
+.county-tile.selected{border-color:var(--navy)!important}
+.ct-name{font-size:9px;font-weight:500;line-height:1.2;display:block}
+.ct-val{font-size:11px;font-weight:600;display:block;margin-top:2px}
+.tier-high{background:#EEF3FA;color:#0C447C}
+.tier-mod{background:#E1F5EE;color:#085041}
+.tier-low{background:#FAEEDA;color:#633806}
+.tier-crisis{background:#FCEBEB;color:#791F1F}
+
+/* DETAIL PANEL */
+.detail{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;display:none}
+.detail.show{display:block}
+.detail-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.detail-name{font-size:18px;font-weight:600;color:var(--navy)}
+.detail-tier{font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px}
+.detail-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.ds{background:var(--bg);border-radius:7px;padding:10px 12px}
+.ds-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.ds-val{font-size:18px;font-weight:600;color:var(--navy)}
+.ds-flag{font-size:10px;color:var(--red);margin-top:2px}
+.hpsa-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:4px;background:var(--red-l);color:var(--red);margin-top:8px}
+
+/* DISPARITY CHART */
+.wide-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.wide-chart{position:relative;height:260px}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mid)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.footer{font-size:11px;color:var(--muted);text-align:center;line-height:1.8;margin-top:16px}
+.footer a{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <h1>NJ Health Equity Access Analytics Dashboard</h1>
+  <p>21 counties · Insurance coverage · Provider access · Racial disparity · Chronic disease burden</p>
+  <div class="hdr-tags">
+    <span class="htag jnj">J&J Race to Health Equity ESG pillar</span>
+    <span class="htag">CDC PLACES + ACS + HRSA</span>
+    <span class="htag">Python · SQL · Chart.js · Tableau</span>
+    <span class="htag">Lunarix Technologies LLC</span>
+  </div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-lbl">NJ avg uninsured</div>
+    <div class="kpi-val">8.3%</div>
+    <div class="kpi-sub">vs US avg 9.2%</div>
+    <div class="kpi-flag" style="color:var(--teal)">↓ Better than national</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Crisis counties</div>
+    <div class="kpi-val" style="color:var(--red)">2</div>
+    <div class="kpi-sub">Cumberland + Salem</div>
+    <div class="kpi-flag" style="color:var(--red)">HPSA shortage designated</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Racial gap (Black–White)</div>
+    <div class="kpi-val" style="color:var(--amber)">+10pp</div>
+    <div class="kpi-sub">avg uninsured gap</div>
+    <div class="kpi-flag" style="color:var(--amber)">Highest: Cumberland</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Hispanic–White gap</div>
+    <div class="kpi-val" style="color:var(--amber)">+16pp</div>
+    <div class="kpi-sub">avg uninsured gap</div>
+    <div class="kpi-flag" style="color:var(--amber)">Highest: Cumberland</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Est. uninsured pop.</div>
+    <div class="kpi-val">743K</div>
+    <div class="kpi-sub">across 21 counties</div>
+    <div class="kpi-flag" style="color:var(--mid)">2022 ACS estimate</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">HPSA counties</div>
+    <div class="kpi-val" style="color:var(--red)">8</div>
+    <div class="kpi-sub">primary care shortage</div>
+    <div class="kpi-flag" style="color:var(--mid)">HRSA 2023</div>
+  </div>
+</div>
+
+<div class="metric-sel">
+  <label>Map metric:</label>
+  <select id="metricSel" onchange="renderMap()">
+    <option value="uninsured">Uninsured rate (%)</option>
+    <option value="diabetes">Diabetes prevalence (%)</option>
+    <option value="providers">Primary care per 10K</option>
+    <option value="disparity">Black–White insurance gap (pp)</option>
+  </select>
+</div>
+
+<div class="map-card">
+  <div class="card-title">NJ county health access map</div>
+  <div class="card-sub">Click any county for detailed breakdown · Color = selected metric · Tier classification: High / Moderate / Low / Crisis access</div>
+  <div class="county-grid" id="countyGrid"></div>
+  <div class="legend" id="mapLegend"></div>
+</div>
+
+<div class="detail" id="detailPanel">
+  <div class="detail-hdr">
+    <div>
+      <div class="detail-name" id="det-name">—</div>
+      <div id="det-region" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
+    </div>
+    <span class="detail-tier" id="det-tier"></span>
+  </div>
+  <div class="detail-stats" id="det-stats"></div>
+</div>
+
+<div class="main-grid">
+  <div class="card">
+    <div class="card-title">Uninsured rate by county</div>
+    <div class="card-sub">Sorted descending · 2022 ACS estimate</div>
+    <div class="chart-wrap"><canvas id="uninsuredChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Income vs. uninsured rate</div>
+    <div class="card-sub">Scatter by county · bubble size = population</div>
+    <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+  </div>
+</div>
+
+<div class="wide-card">
+  <div class="card-title">Racial insurance disparity — Black and Hispanic vs. White uninsured rate</div>
+  <div class="card-sub">Top 10 counties by disparity gap · J&J Race to Health Equity focus</div>
+  <div class="wide-chart"><canvas id="disparityChart"></canvas></div>
+</div>
+
+<div class="main-grid">
+  <div class="card">
+    <div class="card-title">Disease burden by NJ region</div>
+    <div class="card-sub">Diabetes + hypertension prevalence · Relevant to J&J pharma portfolio</div>
+    <div class="chart-wrap"><canvas id="diseaseChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">J&J market opportunity score</div>
+    <div class="card-sub">Index: uninsured × disease burden × provider gap · top 8 counties</div>
+    <div class="chart-wrap"><canvas id="opportunityChart"></canvas></div>
+  </div>
+</div>
+
+<div class="footer">
+  Built by <strong>Yiduo Xiao</strong> · Lunarix Technologies LLC · Edison, NJ<br>
+  Sources: CDC PLACES 2023 · US Census ACS 2022 · HRSA Data Warehouse 2023 · NJ DOH County Health Profiles<br>
+  Aligns with J&amp;J "Race to Health Equity" ESG commitment · $100M NJ-centered health equity initiative<br>
+  <a href="https://lunariduo.com">lunariduo.com</a> · <a href="https://linkedin.com/in/yiduo194">linkedin.com/in/yiduo194</a>
+</div>
+</div>
+
+<script>
+const COUNTIES = [
+  {name:'Sussex',    region:'North NJ',  pop:144221, income:88200, uninsured:6.2, diabetes:9.6, providers:78.4, dispGap:5.6, hispGap:9.4, tier:'Moderate',hpsa:0,hypert:32.2,depress:18.8},
+  {name:'Passaic',   region:'North NJ',  pop:523084, income:66800, uninsured:11.4,diabetes:13.4,providers:70.4, dispGap:9.0, hispGap:15.6,tier:'Low',    hpsa:1,hypert:38.8,depress:22.8},
+  {name:'Bergen',    region:'North NJ',  pop:955732, income:91200, uninsured:5.6, diabetes:8.6, providers:92.4, dispGap:5.6, hispGap:8.8, tier:'High',   hpsa:0,hypert:30.4,depress:17.8},
+  {name:'Warren',    region:'North NJ',  pop:109632, income:79400, uninsured:6.6, diabetes:10.0,providers:78.4, dispGap:5.8, hispGap:10.6,tier:'Moderate',hpsa:0,hypert:32.8,depress:19.0},
+  {name:'Morris',    region:'North NJ',  pop:509285, income:104800,uninsured:4.6, diabetes:7.8, providers:94.4, dispGap:5.2, hispGap:7.8, tier:'High',   hpsa:0,hypert:28.6,depress:16.8},
+  {name:'Essex',     region:'North NJ',  pop:863728, income:64800, uninsured:10.6,diabetes:13.8,providers:78.4, dispGap:8.6, hispGap:14.4,tier:'Low',    hpsa:1,hypert:39.2,depress:23.2},
+  {name:'Hudson',    region:'North NJ',  pop:724854, income:62400, uninsured:10.8,diabetes:12.8,providers:74.4, dispGap:8.4, hispGap:15.0,tier:'Low',    hpsa:1,hypert:37.6,depress:21.8},
+  {name:'Hunterdon', region:'Central NJ',pop:128947, income:105400,uninsured:3.8, diabetes:7.2, providers:96.4, dispGap:4.4, hispGap:5.2, tier:'High',   hpsa:0,hypert:27.4,depress:15.8},
+  {name:'Somerset',  region:'Central NJ',pop:345361, income:103600,uninsured:4.4, diabetes:7.6, providers:92.4, dispGap:5.2, hispGap:7.6, tier:'High',   hpsa:0,hypert:28.2,depress:16.4},
+  {name:'Union',     region:'North NJ',  pop:575345, income:78800, uninsured:8.6, diabetes:11.8,providers:76.4, dispGap:7.2, hispGap:12.2,tier:'Moderate',hpsa:1,hypert:36.4,depress:21.2},
+  {name:'Middlesex', region:'Central NJ',pop:863162, income:85600, uninsured:6.4, diabetes:9.2, providers:88.4, dispGap:5.8, hispGap:9.8, tier:'High',   hpsa:0,hypert:31.2,depress:18.2},
+  {name:'Mercer',    region:'Central NJ',pop:387340, income:79400, uninsured:8.2, diabetes:11.4,providers:84.4, dispGap:7.2, hispGap:12.0,tier:'Moderate',hpsa:0,hypert:35.2,depress:20.2},
+  {name:'Burlington', region:'Central NJ',pop:461860,income:80100, uninsured:6.2, diabetes:9.8, providers:84.2, dispGap:5.6, hispGap:9.8, tier:'Moderate',hpsa:0,hypert:32.4,depress:18.6},
+  {name:'Monmouth',  region:'Central NJ',pop:643615, income:93200, uninsured:5.2, diabetes:8.4, providers:90.4, dispGap:5.6, hispGap:7.0, tier:'High',   hpsa:0,hypert:29.8,depress:17.4},
+  {name:'Ocean',     region:'South NJ',  pop:637229, income:71200, uninsured:6.8, diabetes:10.2,providers:82.4, dispGap:5.8, hispGap:10.6,tier:'Moderate',hpsa:0,hypert:33.4,depress:19.2},
+  {name:'Camden',    region:'South NJ',  pop:523485, income:62800, uninsured:9.8, diabetes:13.2,providers:72.4, dispGap:8.0, hispGap:13.6,tier:'Low',    hpsa:1,hypert:38.4,depress:22.4},
+  {name:'Gloucester',region:'South NJ',  pop:302294, income:78400, uninsured:6.6, diabetes:9.4, providers:80.2, dispGap:6.0, hispGap:9.6, tier:'Moderate',hpsa:0,hypert:31.8,depress:18.4},
+  {name:'Atlantic',  region:'South NJ',  pop:269918, income:58200, uninsured:12.8,diabetes:12.4,providers:68.4, dispGap:9.4, hispGap:15.2,tier:'Low',    hpsa:0,hypert:36.8,depress:20.4},
+  {name:'Cape May',  region:'South NJ',  pop:93553,  income:67500, uninsured:7.6, diabetes:10.4,providers:74.2, dispGap:7.2, hispGap:11.0,tier:'Moderate',hpsa:0,hypert:33.8,depress:19.4},
+  {name:'Salem',     region:'South NJ',  pop:63336,  income:59200, uninsured:12.6,diabetes:14.2,providers:48.4, dispGap:10.4,hispGap:16.2,tier:'Crisis', hpsa:1,hypert:40.8,depress:23.6},
+  {name:'Cumberland',region:'South NJ',  pop:154152, income:48200, uninsured:15.2,diabetes:15.8,providers:52.4, dispGap:12.2,hispGap:19.2,tier:'Crisis', hpsa:1,hypert:42.4,depress:24.8},
+];
+
+const TIER_COLOR = {
+  'High':'#EEF3FA','Moderate':'#E1F5EE','Low':'#FAEEDA','Crisis':'#FCEBEB'
+};
+const TIER_TEXT = {
+  'High':'#0C447C','Moderate':'#085041','Low':'#633806','Crisis':'#791F1F'
+};
+const TIER_PILL = {
+  'High':'background:#EEF3FA;color:#0C447C',
+  'Moderate':'background:#E1F5EE;color:#085041',
+  'Low':'background:#FAEEDA;color:#633806',
+  'Crisis':'background:#FCEBEB;color:#791F1F'
+};
+
+let selectedCounty = null;
+
+function getMetricVal(c, metric){
+  if(metric==='uninsured') return c.uninsured;
+  if(metric==='diabetes') return c.diabetes;
+  if(metric==='providers') return c.providers;
+  if(metric==='disparity') return c.dispGap;
+}
+function getMetricRange(metric){
+  const vals = COUNTIES.map(c=>getMetricVal(c,metric));
+  return {min:Math.min(...vals), max:Math.max(...vals)};
+}
+function metricColor(val, metric, range){
+  const pct = (val - range.min)/(range.max - range.min);
+  if(metric==='providers'){
+    const r = Math.round(30+pct*(27-30)), g=Math.round(78+pct*(158-78)), b=Math.round(138+pct*(117-138));
+    return `rgba(${r},${g},${b},0.85)`;
+  }
+  const r=Math.round(238+pct*(252-238)), g=Math.round(243+pct*(235-243)), b=Math.round(250+pct*(235-250));
+  if(pct>0.66) return `rgba(163,45,45,0.75)`;
+  if(pct>0.33) return `rgba(186,117,23,0.75)`;
+  return `rgba(27,79,138,0.55)`;
+}
+function getMetricLabel(metric){
+  return {uninsured:'Uninsured %',diabetes:'Diabetes %',providers:'Providers/10K',disparity:'Black–White gap pp'}[metric];
+}
+
+// map layout: approximate NJ geographic grid positions
+// 7 columns, rows assigned to match NJ geography roughly
+const MAP_LAYOUT = [
+  [null,null,'Sussex',null,'Passaic','Bergen',null],
+  [null,'Warren','Morris',null,'Essex','Hudson',null],
+  ['Hunterdon','Somerset',null,'Union','Middlesex',null,null],
+  [null,'Mercer','Burlington',null,'Monmouth',null,null],
+  [null,null,'Camden','Gloucester',null,'Ocean',null],
+  [null,null,'Atlantic','Cape May',null,null,null],
+  [null,'Salem','Cumberland',null,null,null,null],
+];
+
+function renderMap(){
+  const metric = document.getElementById('metricSel').value;
+  const range = getMetricRange(metric);
+  const grid = document.getElementById('countyGrid');
+  grid.innerHTML = '';
+  MAP_LAYOUT.forEach(row=>{
+    row.forEach(name=>{
+      const td = document.createElement('div');
+      if(!name){td.style.opacity='0';td.innerHTML='&nbsp;';grid.appendChild(td);return;}
+      const c = COUNTIES.find(x=>x.name===name);
+      const val = getMetricVal(c,metric);
+      td.className = 'county-tile';
+      if(selectedCounty===name) td.classList.add('selected');
+      td.style.background = metricColor(val,metric,range);
+      td.innerHTML = `<span class="ct-name" style="color:var(--navy)">${name}</span><span class="ct-val" style="color:var(--navy)">${metric==='providers'?val.toFixed(0):val.toFixed(1)}</span>`;
+      td.onclick = ()=>selectCounty(name);
+      grid.appendChild(td);
+    });
+  });
+  document.getElementById('mapLegend').innerHTML = `
+    <div class="leg-item"><div class="leg-dot" style="background:#EEF3FA;border:1px solid var(--border)"></div>Low ${getMetricLabel(metric)}</div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(186,117,23,.75)"></div>Medium</div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(163,45,45,.75)"></div>High ${getMetricLabel(metric)}</div>
+    <div class="leg-item" style="margin-left:auto;color:var(--muted)">${getMetricLabel(metric)} · Click county for details</div>
+  `;
+}
+
+function selectCounty(name){
+  selectedCounty = name;
+  renderMap();
+  const c = COUNTIES.find(x=>x.name===name);
+  const panel = document.getElementById('detailPanel');
+  panel.className = 'detail show';
+  document.getElementById('det-name').textContent = name + ' County';
+  document.getElementById('det-region').textContent = c.region + ' · Population: ' + c.pop.toLocaleString();
+  const tp = document.getElementById('det-tier');
+  tp.textContent = c.tier + ' Access';
+  tp.style = TIER_PILL[c.tier];
+  document.getElementById('det-stats').innerHTML = `
+    <div class="ds"><div class="ds-lbl">Uninsured rate</div><div class="ds-val">${c.uninsured}%</div>${c.uninsured>12?'<div class="ds-flag">⚠ High risk</div>':''}</div>
+    <div class="ds"><div class="ds-lbl">Diabetes</div><div class="ds-val">${c.diabetes}%</div></div>
+    <div class="ds"><div class="ds-lbl">Hypertension</div><div class="ds-val">${c.hypert}%</div></div>
+    <div class="ds"><div class="ds-lbl">Primary care/10K</div><div class="ds-val">${c.providers}</div>${c.providers<60?'<div class="ds-flag">⚠ HPSA shortage</div>':''}</div>
+    <div class="ds"><div class="ds-lbl">Median income</div><div class="ds-val">$${(c.income/1000).toFixed(0)}K</div></div>
+    <div class="ds"><div class="ds-lbl">Black–White gap</div><div class="ds-val">+${c.dispGap}pp</div>${c.dispGap>9?'<div class="ds-flag">⚠ High disparity</div>':''}</div>
+    <div class="ds"><div class="ds-lbl">Hispanic–White gap</div><div class="ds-val">+${c.hispGap}pp</div></div>
+    ${c.hpsa?'<div class="ds" style="grid-column:span 2"><div class="ds-lbl">HRSA Designation</div><span class="hpsa-badge">⚠ HPSA — Primary Care Shortage Area</span></div>':''}
+  `;
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function buildUninsuredChart(){
+  const sorted = [...COUNTIES].sort((a,b)=>b.uninsured-a.uninsured);
+  const ctx = document.getElementById('uninsuredChart').getContext('2d');
+  new Chart(ctx,{type:'bar',
+    data:{
+      labels: sorted.map(c=>c.name),
+      datasets:[{
+        label:'Uninsured %',
+        data: sorted.map(c=>c.uninsured),
+        backgroundColor: sorted.map(c=>
+          c.tier==='Crisis'?'rgba(163,45,45,.7)':
+          c.tier==='Low'?'rgba(186,117,23,.7)':
+          c.tier==='High'?'rgba(27,79,138,.7)':'rgba(29,158,117,.7)'
+        ),
+        borderRadius:3,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:9},maxRotation:45}},
+        y:{title:{display:true,text:'Uninsured %',font:{size:10}},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildScatterChart(){
+  const ctx = document.getElementById('scatterChart').getContext('2d');
+  new Chart(ctx,{type:'scatter',
+    data:{datasets:[{
+      label:'County',
+      data: COUNTIES.map(c=>({x:c.income/1000,y:c.uninsured,name:c.name})),
+      backgroundColor: COUNTIES.map(c=>
+        c.tier==='Crisis'?'rgba(163,45,45,.7)':
+        c.tier==='Low'?'rgba(186,117,23,.7)':
+        c.tier==='High'?'rgba(27,79,138,.7)':'rgba(29,158,117,.7)'
+      ),
+      pointRadius: COUNTIES.map(c=>Math.max(5,c.pop/80000)),
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:d=>`${d.raw.name}: $${d.raw.x}K income · ${d.raw.y}% uninsured`}}
+      },
+      scales:{
+        x:{title:{display:true,text:'Median household income ($K)',font:{size:10}},ticks:{font:{size:10}}},
+        y:{title:{display:true,text:'Uninsured rate (%)',font:{size:10}},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildDisparityChart(){
+  const top10 = [...COUNTIES].sort((a,b)=>b.dispGap-a.dispGap).slice(0,10);
+  const ctx = document.getElementById('disparityChart').getContext('2d');
+  new Chart(ctx,{type:'bar',
+    data:{
+      labels:top10.map(c=>c.name),
+      datasets:[
+        {label:'Black uninsured gap vs White',data:top10.map(c=>c.dispGap),backgroundColor:'rgba(163,45,45,.7)',borderRadius:3},
+        {label:'Hispanic uninsured gap vs White',data:top10.map(c=>c.hispGap),backgroundColor:'rgba(186,117,23,.65)',borderRadius:3},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{ticks:{font:{size:10}}},
+        y:{title:{display:true,text:'Percentage point gap vs White',font:{size:10}},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildDiseaseChart(){
+  const byRegion = {
+    'North NJ':{diabetes:[],hypert:[]},
+    'Central NJ':{diabetes:[],hypert:[]},
+    'South NJ':{diabetes:[],hypert:[]},
+  };
+  COUNTIES.forEach(c=>{
+    if(byRegion[c.region]){byRegion[c.region].diabetes.push(c.diabetes);byRegion[c.region].hypert.push(c.hypert);}
+  });
+  const avg = arr=>arr.length?+(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1):0;
+  const ctx = document.getElementById('diseaseChart').getContext('2d');
+  new Chart(ctx,{type:'bar',
+    data:{
+      labels:['North NJ','Central NJ','South NJ'],
+      datasets:[
+        {label:'Diabetes %',data:Object.values(byRegion).map(r=>avg(r.diabetes)),backgroundColor:'rgba(27,79,138,.7)',borderRadius:3},
+        {label:'Hypertension %',data:Object.values(byRegion).map(r=>avg(r.hypert)),backgroundColor:'rgba(83,74,183,.7)',borderRadius:3},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},
+      scales:{
+        x:{ticks:{font:{size:11}}},
+        y:{title:{display:true,text:'Prevalence (%)',font:{size:10}},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildOpportunityChart(){
+  const scored = COUNTIES.map(c=>({
+    name:c.name,
+    score:+(c.diabetes*0.35 + c.uninsured*1.8 + Math.max(0,(100-c.providers)/8)).toFixed(1)
+  })).sort((a,b)=>b.score-a.score).slice(0,8);
+  const ctx = document.getElementById('opportunityChart').getContext('2d');
+  new Chart(ctx,{type:'bar',
+    data:{
+      labels:scored.map(c=>c.name),
+      datasets:[{
+        label:'J&J Opportunity Index',
+        data:scored.map(c=>c.score),
+        backgroundColor:'rgba(29,158,117,.7)',
+        borderRadius:3,
+      }]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+               tooltip:{callbacks:{label:d=>`Score: ${d.raw} · Higher = greater unmet need`}}},
+      scales:{
+        x:{title:{display:true,text:'Composite opportunity score',font:{size:10}},ticks:{font:{size:10}}},
+        y:{ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+renderMap();
+buildUninsuredChart();
+buildScatterChart();
+buildDisparityChart();
+buildDiseaseChart();
+buildOpportunityChart();
+</script>
+</body>
+</html>

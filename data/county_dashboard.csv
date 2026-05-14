@@ -1,0 +1,22 @@
+fips,county_name,region,population,median_income,pct_nonwhite,urban_rural,uninsured_pct,medicaid_pct,uninsured_hispanic,uninsured_black,primary_care_per_10k,mental_health_per_10k,hpsa_primary_care,hpsa_mental_health,diabetes_pct,hypertension_pct,depression_pct,coverage_score,provider_score,disease_burden_score,access_tier
+34001,Atlantic,South,269918,58200,42.1,Suburban,12.8,22.4,22.6,16.8,68.4,18.4,0,1,12.4,36.8,20.4,87.2,57.0,56.6,Low Access
+34003,Bergen,North,955732,91200,40.8,Suburban,5.6,12.8,12.4,9.8,92.4,28.4,0,0,8.6,30.4,17.8,94.4,77.0,69.9,High Access
+34005,Burlington,Central,461860,80100,24.4,Suburban,6.2,16.4,14.6,10.4,84.2,22.4,0,0,9.8,32.4,18.6,93.8,70.2,65.7,Moderate Access
+34007,Camden,South,523485,62800,49.6,Urban,9.8,28.8,20.4,14.8,72.4,20.4,1,1,13.2,38.4,22.4,90.2,60.3,53.8,Low Access
+34009,Cape May,South,93553,67500,10.4,Rural,7.6,18.2,16.8,12.2,74.2,16.4,0,0,10.4,33.8,19.4,92.4,61.8,63.6,Low Access
+34011,Cumberland,South,154152,48200,55.0,Rural,15.2,34.4,28.4,21.4,52.4,12.4,1,1,15.8,42.4,24.8,84.8,43.7,44.7,Crisis
+34013,Essex,North,863728,64800,72.4,Urban,10.6,26.4,21.6,15.8,78.4,22.4,1,1,13.8,39.2,23.2,89.4,65.3,51.7,Low Access
+34015,Gloucester,South,302294,78400,21.6,Suburban,6.6,17.2,14.4,10.8,80.2,22.4,0,0,9.4,31.8,18.4,93.4,66.8,67.1,Moderate Access
+34017,Hudson,North,724854,62400,79.2,Urban,10.8,24.8,22.8,16.4,74.4,20.4,1,1,12.8,37.6,21.8,89.2,62.0,55.2,Low Access
+34019,Hunterdon,North,128947,105400,10.2,Rural,3.8,8.4,8.6,7.2,96.4,30.4,0,0,7.2,27.4,15.8,96.2,80.3,74.8,High Access
+34021,Mercer,Central,387340,79400,46.8,Urban,8.2,22.4,17.8,13.4,84.4,24.4,0,0,11.4,35.2,20.2,91.8,70.3,60.1,Moderate Access
+34023,Middlesex,Central,863162,85600,55.2,Suburban,6.4,14.8,14.2,10.2,88.4,26.4,0,0,9.2,31.2,18.2,93.6,73.7,67.8,Moderate Access
+34025,Monmouth,Central,643615,93200,20.4,Suburban,5.2,12.4,12.8,9.4,90.4,26.4,0,0,8.4,29.8,17.4,94.8,75.3,70.6,High Access
+34027,Morris,North,509285,104800,19.8,Suburban,4.6,10.4,11.2,8.6,94.4,28.4,0,0,7.8,28.6,16.8,95.4,78.7,72.7,High Access
+34029,Ocean,South,637229,71200,10.6,Suburban,6.8,16.8,15.2,10.8,82.4,20.4,0,0,10.2,33.4,19.2,93.2,68.7,64.3,Moderate Access
+34031,Passaic,North,523084,66800,60.4,Urban,11.4,26.8,23.8,17.2,70.4,18.4,1,1,13.4,38.8,22.8,88.6,58.7,53.1,Low Access
+34033,Salem,South,63336,59200,31.2,Rural,12.6,26.4,24.6,19.2,48.4,10.4,1,1,14.2,40.8,23.6,87.4,40.3,50.3,Low Access
+34035,Somerset,Central,345361,103600,39.2,Suburban,4.4,10.8,10.8,8.4,92.4,28.4,0,0,7.6,28.2,16.4,95.6,77.0,73.4,High Access
+34037,Sussex,North,144221,88200,8.4,Rural,6.2,12.8,13.8,10.2,78.4,20.4,0,0,9.6,32.2,18.8,93.8,65.3,66.4,Moderate Access
+34039,Union,North,575345,78800,55.6,Urban,8.6,21.4,18.4,13.8,76.4,22.4,1,0,11.8,36.4,21.2,91.4,63.7,58.7,Moderate Access
+34041,Warren,North,109632,79400,12.4,Rural,6.6,14.4,15.2,10.6,78.4,20.4,0,0,10.0,32.8,19.0,93.4,65.3,65.0,Moderate Access
